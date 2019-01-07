@@ -140,9 +140,12 @@ def main():
     BASE_PATH = args[1] if len(args) == 2 else './'
     JSON_PATH = os.path.join(BASE_PATH, 'json')
     IMGS_PATH = os.path.join(BASE_PATH, 'images')
-    TIME_SERIES_PATH = os.path.join(BASE_PATH, 'for_time_series_video')
-    if not os.path.isdir(TIME_SERIES_PATH):
-        os.mkdir(TIME_SERIES_PATH)
+    TIME_AND_CONFIDENCE_PATH = os.path.join(BASE_PATH, 'for_time_and_confidence_video')
+    if not os.path.isdir(TIME_AND_CONFIDENCE_PATH):
+        os.mkdir(TIME_AND_CONFIDENCE_PATH)
+
+    log_file_path = os.path.join(BASE_PATH, 'log.txt')
+    f = open(log_file_path, 'w')
 
     # OpenPoseの結果jsonと画像が入っているディレクトリの名前のリスト
     # image000001, image000002, ...
@@ -171,6 +174,8 @@ def main():
         if not exists_first_keypoints:
             print('{} ===================================='.format(json_dir))
             print('    method: confidence')
+            f.write('{} ====================================\n'.format(json_dir))
+            f.write('    method: confidence\n')
 
             max_confidence, max_confidence_idx = get_max_confidence_and_idx(json_dir_path)
             max_confidence_json_path = os.path.join(json_dir_path,
@@ -186,18 +191,16 @@ def main():
                                                              rot_center_x=rot_center_x,
                                                              rot_center_y=rot_center_y)
 
-                OUTPUT_PATH = os.path.join(TIME_SERIES_PATH, '{}.png'.format(imgs_dir))
+                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
                 save_rotate_image(max_image_path, OUTPUT_PATH, max_confidence_idx * (-10))
             else:
-                OUTPUT_PATH = os.path.join(TIME_SERIES_PATH, '{}.png'.format(imgs_dir))
+                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
                 save_rotate_image(max_image_path, OUTPUT_PATH, 0)
 
             print('    confidence score: {}'.format(max_confidence))
+            f.write('    confidence score: {}\n'.format(max_confidence))
         # 最初のキーポイントが定まっているときは時系列を考慮して
         else:
-            print('{} ===================================='.format(json_dir))
-            print('    method: time series')
-
             euclidean_dist_list = np.array([])
 
             for i in range(len(json_name_list)):
@@ -220,7 +223,50 @@ def main():
                 else:
                     euclidean_dist_list = np.append(euclidean_dist_list, np.inf)
 
-            if np.min(euclidean_dist_list) != np.inf:
+            max_dist = 1000
+
+            if np.min(euclidean_dist_list) > max_dist:
+                print('{} ===================================='.format(json_dir))
+                print('    method: confidence')
+                f.write('{} ====================================\n'.format(json_dir))
+                f.write('    method: confidence\n')
+                f.write('    dist: {}\n'.format(np.min(euclidean_dist_list)))
+
+                max_confidence, max_confidence_idx = get_max_confidence_and_idx(json_dir_path)
+                max_confidence_json_path = os.path.join(json_dir_path,
+                                                        json_name_list[max_confidence_idx])
+                max_confidence_keypoints = extract_keypoints_from_json(max_confidence_json_path)
+
+                max_image_name = imgs_name_list[max_confidence_idx]
+                max_image_path = os.path.join(imgs_dir_path, max_image_name)
+                if max_confidence_keypoints.any():
+                    exists_first_keypoints = True
+                    pre_keypoints_array = rotate_keypoints_array(max_confidence_keypoints,
+                                                                 max_confidence_idx * (-10),
+                                                                 rot_center_x=rot_center_x,
+                                                                 rot_center_y=rot_center_y)
+
+                    OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
+                    save_rotate_image(max_image_path, OUTPUT_PATH, max_confidence_idx * (-10))
+                else:
+                    OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
+                    save_rotate_image(max_image_path, OUTPUT_PATH, 0)
+
+                print('    confidence score: {}'.format(max_confidence))
+                f.write('    confidence score: {}\n'.format(max_confidence))
+
+            # elif np.min(euclidean_dist_list) != np.inf:
+            else:
+                print('{} ===================================='.format(json_dir))
+                print('    method: time series')
+                f.write('{} ====================================\n'.format(json_dir))
+                f.write('    method: time series\n')
+
+                sorted_euclidean_dist_list = np.sort(euclidean_dist_list)
+                f.write('    1: {}\n'.format(sorted_euclidean_dist_list[0]))
+                f.write('    2: {}\n'.format(sorted_euclidean_dist_list[1]))
+                f.write('    3: {}\n'.format(sorted_euclidean_dist_list[2]))
+
                 nearest_idx = np.argmin(euclidean_dist_list)
                 nearest_image_name = imgs_name_list[nearest_idx]
                 nearest_image_path = os.path.join(imgs_dir_path, nearest_image_name)
@@ -232,18 +278,19 @@ def main():
                                                              rot_center_x=rot_center_x,
                                                              rot_center_y=rot_center_y)
 
-                OUTPUT_PATH = os.path.join(TIME_SERIES_PATH, '{}.png'.format(imgs_dir))
+                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
                 save_rotate_image(nearest_image_path, OUTPUT_PATH, nearest_idx * (-10))
-            else:
-                nearest_idx = 0
-                nearest_image_name = imgs_name_list[nearest_idx]
-                nearest_image_path = os.path.join(imgs_dir_path, nearest_image_name)
+            # else:
+            #     f.write('    infinity')
+            #     nearest_idx = 0
+            #     nearest_image_name = imgs_name_list[nearest_idx]
+            #     nearest_image_path = os.path.join(imgs_dir_path, nearest_image_name)
 
-                nearest_json_path = os.path.join(json_dir_path, json_name_list[nearest_idx])
-                nearest_keypoints_array = extract_keypoints_from_json(nearest_json_path)
+            #     nearest_json_path = os.path.join(json_dir_path, json_name_list[nearest_idx])
+            #     nearest_keypoints_array = extract_keypoints_from_json(nearest_json_path)
 
-                OUTPUT_PATH = os.path.join(TIME_SERIES_PATH, '{}.png'.format(imgs_dir))
-                save_rotate_image(nearest_image_path, OUTPUT_PATH, nearest_idx * (-10))
+            #     OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
+            #     save_rotate_image(nearest_image_path, OUTPUT_PATH, nearest_idx * (-10))
 
 
 if __name__ == '__main__':
