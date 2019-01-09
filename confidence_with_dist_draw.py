@@ -6,8 +6,10 @@ import numpy as np
 
 from PIL import Image
 
+from openposedraw import draw_joints
 from select_high_confidence_images import (get_max_confidence_and_idx,
-                                           save_rotate_image)
+                                           save_rotate_image,
+                                           create_confidence_array)
 
 
 def rotate_xy(x, y, deg, rot_center_x=0, rot_center_y=0):
@@ -137,16 +139,22 @@ def get_rot_center(img_path):
 def main():
     args = sys.argv
 
-    BASE_PATH = args[1] if len(args) == 2 else './'
+    BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
     IMGS_PATH = os.path.join(BASE_PATH, 'images')
     MAX_DIST = 500
-    TIME_AND_CONFIDENCE_PATH = os.path.join(BASE_PATH,
-                                            'for_time_and_confidence_video_{}'.format(MAX_DIST))
-    if not os.path.isdir(TIME_AND_CONFIDENCE_PATH):
-        os.mkdir(TIME_AND_CONFIDENCE_PATH)
+    TIME_AND_CONFIDENCE_DRAW_PATH = os.path.join(
+                                        BASE_PATH,
+                                        'for_confidence_with_dist_draw_video_{}'.format(MAX_DIST)
+                                    )
+    if not os.path.isdir(TIME_AND_CONFIDENCE_DRAW_PATH):
+        os.mkdir(TIME_AND_CONFIDENCE_DRAW_PATH)
 
-    log_file_path = os.path.join(TIME_AND_CONFIDENCE_PATH, 'log.txt')
+    INPUT_IMAGES_PATH = args[2]
+    input_imgs_list = make_list_in_dir(INPUT_IMAGES_PATH)
+    input_imgs_list = [img for img in input_imgs_list if 'jpg' in img]
+
+    log_file_path = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH, 'log_confidence_with_dist_draw.txt')
     f = open(log_file_path, 'w')
 
     # OpenPoseの結果jsonと画像が入っているディレクトリの名前のリスト
@@ -161,7 +169,7 @@ def main():
     img_path = os.path.join(imgs_dir_path, imgs_name_list[0])
     rot_center_x, rot_center_y = get_rot_center(img_path)
 
-    for json_dir, imgs_dir in zip(json_dir_list, imgs_dir_list):
+    for json_dir, imgs_dir, input_img in zip(json_dir_list, imgs_dir_list, input_imgs_list):
         # OpenPoseの結果jsonと画像が格納されているディレクトリ
         json_dir_path = os.path.join(JSON_PATH, json_dir)
         imgs_dir_path = os.path.join(IMGS_PATH, imgs_dir)
@@ -171,6 +179,8 @@ def main():
         # image000001_rotate000_keypoints.json, image000001_rotate010_keypoints.json, ...
         json_name_list = make_list_in_dir(json_dir_path)
         imgs_name_list = make_list_in_dir(imgs_dir_path)
+
+        input_img_path = os.path.join(INPUT_IMAGES_PATH, input_img)
 
         # 最初のキーポイントが定まっていなかった時はconfidenceで判断
         if not exists_first_keypoints:
@@ -189,14 +199,15 @@ def main():
             if max_confidence_keypoints.any():
                 exists_first_keypoints = True
                 pre_keypoints_array = rotate_keypoints_array(max_confidence_keypoints,
-                                                             max_confidence_idx * (-10),
+                                                             max_confidence_idx * 10,
                                                              rot_center_x=rot_center_x,
                                                              rot_center_y=rot_center_y)
+                reshaped_pre_keypoints_array = pre_keypoints_array.reshape([18, 3])
 
-                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
-                save_rotate_image(max_image_path, OUTPUT_PATH, max_confidence_idx * (-10))
+                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH, '{}.png'.format(imgs_dir))
+                draw_joints(input_img_path, OUTPUT_PATH, reshaped_pre_keypoints_array)
             else:
-                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
+                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH, '{}.png'.format(imgs_dir))
                 save_rotate_image(max_image_path, OUTPUT_PATH, 0)
 
             print('    confidence score: {}'.format(max_confidence))
@@ -206,7 +217,7 @@ def main():
             euclidean_dist_list = np.array([])
 
             for i in range(len(json_name_list)):
-                deg = i * (-10)
+                deg = i * 10
 
                 json_name = json_name_list[i]
                 json_name_path = os.path.join(json_dir_path, json_name)
@@ -225,7 +236,13 @@ def main():
                 else:
                     euclidean_dist_list = np.append(euclidean_dist_list, np.inf)
 
-            if np.min(euclidean_dist_list) > MAX_DIST:
+                valid_euclidean_dist_list = np.array([
+                    dist for dist in euclidean_dist_list if dist <= MAX_DIST])
+                valid_dist_len = len(valid_euclidean_dist_list)
+                max_len = 5
+                valid_dist_len = valid_dist_len if valid_dist_len <= max_len else max_len
+
+            if valid_dist_len == 0:
                 print('{} ===================================='.format(json_dir))
                 print('    method: confidence')
                 f.write('{} ====================================\n'.format(json_dir))
@@ -242,14 +259,17 @@ def main():
                 if max_confidence_keypoints.any():
                     exists_first_keypoints = True
                     pre_keypoints_array = rotate_keypoints_array(max_confidence_keypoints,
-                                                                 max_confidence_idx * (-10),
+                                                                 max_confidence_idx * 10,
                                                                  rot_center_x=rot_center_x,
                                                                  rot_center_y=rot_center_y)
+                    reshaped_pre_keypoints_array = pre_keypoints_array.reshape([18, 3])
 
-                    OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
-                    save_rotate_image(max_image_path, OUTPUT_PATH, max_confidence_idx * (-10))
+                    OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH,
+                                               '{}.png'.format(imgs_dir))
+                    draw_joints(input_img_path, OUTPUT_PATH, reshaped_pre_keypoints_array)
                 else:
-                    OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
+                    OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH,
+                                               '{}.png'.format(imgs_dir))
                     save_rotate_image(max_image_path, OUTPUT_PATH, 0)
 
                 print('    confidence score: {}'.format(max_confidence))
@@ -257,28 +277,35 @@ def main():
 
             else:
                 print('{} ===================================='.format(json_dir))
-                print('    method: time series')
+                print('    method: time series and confidence')
                 f.write('{} ====================================\n'.format(json_dir))
-                f.write('    method: time series\n')
+                f.write('    method: time series and confidence\n')
 
-                sorted_euclidean_dist_list = np.sort(euclidean_dist_list)
-                f.write('    1: {}\n'.format(sorted_euclidean_dist_list[0]))
-                f.write('    2: {}\n'.format(sorted_euclidean_dist_list[1]))
-                f.write('    3: {}\n'.format(sorted_euclidean_dist_list[2]))
+                confidence_array = create_confidence_array(json_dir_path)
 
-                nearest_idx = np.argmin(euclidean_dist_list)
-                nearest_image_name = imgs_name_list[nearest_idx]
-                nearest_image_path = os.path.join(imgs_dir_path, nearest_image_name)
+                argsort_idx_list = np.argsort(euclidean_dist_list)
+                argsort_idx_list = argsort_idx_list[:valid_dist_len]
 
-                nearest_json_path = os.path.join(json_dir_path, json_name_list[nearest_idx])
-                nearest_keypoints_array = extract_keypoints_from_json(nearest_json_path)
-                pre_keypoints_array = rotate_keypoints_array(nearest_keypoints_array,
-                                                             nearest_idx * (-10),
+                best_idx = 0
+                max_confidence = -1
+                for argsort_idx in argsort_idx_list:
+                    f.write('    idx - {}:\n'.format(argsort_idx))
+                    f.write('        dist -> {}\n'.format(euclidean_dist_list[argsort_idx]))
+                    f.write('        confidence -> {}\n'.format(confidence_array[argsort_idx]))
+                    if confidence_array[argsort_idx] > max_confidence:
+                        best_idx = argsort_idx
+                        max_confidence = confidence_array[argsort_idx]
+
+                best_json_path = os.path.join(json_dir_path, json_name_list[best_idx])
+                best_keypoints_array = extract_keypoints_from_json(best_json_path)
+                pre_keypoints_array = rotate_keypoints_array(best_keypoints_array,
+                                                             best_idx * 10,
                                                              rot_center_x=rot_center_x,
                                                              rot_center_y=rot_center_y)
+                reshaped_pre_keypoints_array = pre_keypoints_array.reshape([18, 3])
 
-                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_PATH, '{}.png'.format(imgs_dir))
-                save_rotate_image(nearest_image_path, OUTPUT_PATH, nearest_idx * (-10))
+                OUTPUT_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH, '{}.png'.format(imgs_dir))
+                draw_joints(input_img_path, OUTPUT_PATH, reshaped_pre_keypoints_array)
 
     f.close()
 
