@@ -140,7 +140,7 @@ def get_rot_center(img_path):
 def main():
     args = sys.argv
 
-    W_CNT = 0.8
+    W_CNT = 0.9
 
     BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
@@ -325,4 +325,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
