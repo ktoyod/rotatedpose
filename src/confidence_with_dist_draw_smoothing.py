@@ -140,7 +140,7 @@ def get_rot_center(img_path):
 def main():
     args = sys.argv
 
-    W_CNT = 0.9
+    W_CNT = 0.8
 
     BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
@@ -267,8 +267,8 @@ def main():
                                                                  max_confidence_idx * 10,
                                                                  rot_center_x=rot_center_x,
                                                                  rot_center_y=rot_center_y)
-                    reconst_keypoints_array = smoothing(pre_keypoints_array,
-                                                        cnt_keypoints_array,
+                    reconst_keypoints_array = smoothing(cnt_keypoints_array,
+                                                        pre_keypoints_array,
                                                         W_CNT)
                     reshaped_reconst_keypoints_array = reconst_keypoints_array.reshape([18, 3])
 
@@ -311,8 +311,8 @@ def main():
                                                              best_idx * 10,
                                                              rot_center_x=rot_center_x,
                                                              rot_center_y=rot_center_y)
-                reconst_keypoints_array = smoothing(pre_keypoints_array,
-                                                    cnt_keypoints_array,
+                reconst_keypoints_array = smoothing(cnt_keypoints_array,
+                                                    pre_keypoints_array,
                                                     W_CNT)
                 reshaped_reconst_keypoints_array = reconst_keypoints_array.reshape([18, 3])
 
