@@ -140,7 +140,7 @@ def get_rot_center(img_path):
 def main():
     args = sys.argv
 
-    W_CNT = 0.8
+    W_CNT = 0.81
 
     BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
@@ -148,8 +148,8 @@ def main():
     MAX_DIST = 500
     TIME_AND_CONFIDENCE_DRAW_PATH = os.path.join(
                                         BASE_PATH,
-                                        'for_confidence_with_dist_draw_smoothing_video_{}'
-                                        .format(MAX_DIST)
+                                        'for_confidence_with_dist_draw_smoothing_{}_video_{}'
+                                        .format(int(W_CNT * 100), MAX_DIST)
                                     )
     if not os.path.isdir(TIME_AND_CONFIDENCE_DRAW_PATH):
         os.mkdir(TIME_AND_CONFIDENCE_DRAW_PATH)
