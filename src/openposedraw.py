@@ -1,5 +1,11 @@
+import json
+import os
+import sys
+
 import numpy as np
 from PIL import Image, ImageDraw
+
+from select_high_confidence_images import make_list_in_dir
 
 
 # draw the lines
@@ -94,3 +100,48 @@ def draw_joints(img_path, output_path, reconst_joints):
 
     # save the images
     canvas.save(output_path)
+
+
+def get_keypoints_array(json_file_path):
+    with open(json_file_path) as f:
+        json_dic = json.load(f)
+    if json_dic['people']:
+        keypoints_list = json_dic['people'][0]['pose_keypoints_2d']
+    else:
+        keypoints_list = [0 for i in range(18 * 3)]
+
+    return np.array(keypoints_list)
+
+
+def main():
+    args = sys.argv
+
+    INPUT_IMAGES_PATH = args[1]
+    INPUT_JSON_PATH = args[2]
+
+    OUTPUT_IMAGES_PATH = args[3]
+
+    image_name_list = make_list_in_dir(INPUT_IMAGES_PATH)
+    image_name_list = [image_name for image_name in image_name_list if 'jpg' in image_name]
+    json_name_list = make_list_in_dir(INPUT_JSON_PATH)
+
+    list_len = len(image_name_list)
+
+    for i in range(list_len):
+        image_name = image_name_list[i]
+        json_name = json_name_list[i]
+
+        image_file_path = os.path.join(INPUT_IMAGES_PATH, image_name)
+        json_file_path = os.path.join(INPUT_JSON_PATH, json_name)
+
+        output_image_path = os.path.join(OUTPUT_IMAGES_PATH,
+                                         'image{:06d}.png'.format(i))
+
+        keypoints_array = get_keypoints_array(json_file_path)
+        reshaped_keypoints_array = keypoints_array.reshape([18, 3])
+
+        draw_joints(image_file_path, output_image_path, reshaped_keypoints_array)
+
+
+if __name__ == '__main__':
+    main()
