@@ -5,14 +5,6 @@ import sys
 import numpy as np
 from PIL import Image
 
-args = sys.argv
-OPENPOSE_OUTPUT_DIR = args[1] if len(args) == 2 else './'
-IMAGE_DIR = os.path.join(OPENPOSE_OUTPUT_DIR, 'images')
-JSON_DIR = os.path.join(OPENPOSE_OUTPUT_DIR, 'json')
-FOR_VIDEO_DIR = os.path.join(OPENPOSE_OUTPUT_DIR, 'for_confidence_video')
-if not os.path.isdir(FOR_VIDEO_DIR):
-    os.mkdir(FOR_VIDEO_DIR)
-
 
 def calc_confidence(keypoints_list):
     '''
@@ -25,11 +17,37 @@ def calc_confidence(keypoints_list):
     return np.mean(confidence_array)
 
 
+def calc_confidence_without_face_joints(keypoints_list):
+    '''
+    Args: キーポイントのリスト
+    Returns: 信頼度の平均
+    '''
+    keypoints_array = np.array(keypoints_list)
+    confidence_array = keypoints_array[2:14 * 3:3]
+
+    return np.mean(confidence_array)
+
+
+def calc_confidence_without_untrusted_joints(keypoints_list):
+    '''
+    Args:
+        keypoints_list: list
+            キーポイントのリスト
+    Returns:
+        confidence 0のジョイント以外の平均値
+    '''
+    keypoints_array = np.array(keypoints_list)
+    confidence_array = keypoints_array[2::3]
+
+    trusted_confidence_array = confidence_array[np.nonzero(confidence_array)]
+
+    return np.mean(trusted_confidence_array)
+
+
 def create_confidence_array(json_dir_path):
     '''
     Args:
         json_dir: jsonファイルが置いてあるディレクトリ名
-        json_list: jsonファイルの名前が格納されたリスト
     Returns:
         各画像の信頼度の平均が格納されたnumpy.array
     '''
@@ -43,6 +61,50 @@ def create_confidence_array(json_dir_path):
         if json_dic['people']:
             keypoints_list = json_dic['people'][0]['pose_keypoints_2d']
             confidence_list.append(calc_confidence(keypoints_list))
+        else:
+            confidence_list.append(0)
+    return np.array(confidence_list)
+
+
+def create_confidence_array_without_face_joints(json_dir_path):
+    '''
+    Args:
+        json_dir: jsonファイルが置いてあるディレクトリ名
+    Returns:
+        各画像の信頼度の平均が格納されたnumpy.array
+    '''
+    json_list = make_list_in_dir(json_dir_path)
+
+    confidence_list = []
+    for file_name in json_list:
+        json_file_path = os.path.join(json_dir_path, file_name)
+        with open(json_file_path) as f:
+            json_dic = json.load(f)
+        if json_dic['people']:
+            keypoints_list = json_dic['people'][0]['pose_keypoints_2d']
+            confidence_list.append(calc_confidence_without_face_joints(keypoints_list))
+        else:
+            confidence_list.append(0)
+    return np.array(confidence_list)
+
+
+def create_confidence_array_without_untrusted_joints(json_dir_path):
+    '''
+    Args:
+        json_dir: jsonファイルが置いてあるディレクトリ名
+    Returns:
+        各画像の信頼度の平均が格納されたnumpy.array
+    '''
+    json_list = make_list_in_dir(json_dir_path)
+
+    confidence_list = []
+    for file_name in json_list:
+        json_file_path = os.path.join(json_dir_path, file_name)
+        with open(json_file_path) as f:
+            json_dic = json.load(f)
+        if json_dic['people']:
+            keypoints_list = json_dic['people'][0]['pose_keypoints_2d']
+            confidence_list.append(calc_confidence_without_untrusted_joints(keypoints_list))
         else:
             confidence_list.append(0)
     return np.array(confidence_list)
@@ -80,7 +142,41 @@ def get_max_confidence_and_idx(json_dir_path):
     return max_confidence, max_confidence_idx
 
 
+def get_max_confidence_and_idx_without_face_joints(json_dir_path):
+    '''
+    /path/to/images/hoge,/path/to/json/hoge
+    を渡すとconfidenceが最大となるインデックスを返す
+    '''
+    confidence_array = create_confidence_array_without_face_joints(json_dir_path)
+
+    max_confidence = np.max(confidence_array)
+    max_confidence_idx = np.argmax(confidence_array) if confidence_array.any() else 0
+
+    return max_confidence, max_confidence_idx
+
+
+def get_max_confidence_and_idx_without_untrusted_joints(json_dir_path):
+    '''
+    /path/to/images/hoge,/path/to/json/hoge
+    を渡すとconfidenceが最大となるインデックスを返す
+    '''
+    confidence_array = create_confidence_array_without_untrusted_joints(json_dir_path)
+
+    max_confidence = np.max(confidence_array)
+    max_confidence_idx = np.argmax(confidence_array) if confidence_array.any() else 0
+
+    return max_confidence, max_confidence_idx
+
+
 def main():
+    args = sys.argv
+    OPENPOSE_OUTPUT_DIR = args[1] if len(args) == 2 else './'
+    IMAGE_DIR = os.path.join(OPENPOSE_OUTPUT_DIR, 'images')
+    JSON_DIR = os.path.join(OPENPOSE_OUTPUT_DIR, 'json')
+    FOR_VIDEO_DIR = os.path.join(OPENPOSE_OUTPUT_DIR, 'for_confidence_video')
+    if not os.path.isdir(FOR_VIDEO_DIR):
+        os.mkdir(FOR_VIDEO_DIR)
+
     image_dir_list = make_list_in_dir(IMAGE_DIR)
     json_dir_list = make_list_in_dir(JSON_DIR)
 
