@@ -102,6 +102,55 @@ def draw_joints(img_path, output_path, reconst_joints):
     canvas.save(output_path)
 
 
+def draw_joints_on_image(img_path, output_path, joints):
+    # define color params
+    c1 = 255
+    c2 = c1-(int(c1/4))
+    c3 = c2-(int(c1/4))
+    c4 = 0
+
+    # define the colors
+    clr = np.array([[c1, c4, c4],
+                    [c1, c3, c4],
+                    [c1, c2, c4],
+                    [c1, c1, c4],
+                    [c2, c1, c4],
+                    [c3, c1, c4],
+                    [c4, c1, c4],
+                    [c4, c1, c3],
+                    [c4, c1, c2],
+                    [c4, c1, c1],
+                    [c4, c2, c1],
+                    [c4, c3, c1],
+                    [c4, c4, c1],
+                    [c3, c4, c1],
+                    [c2, c4, c1],
+                    [c1, c4, c2],
+                    [c1, c4, c1],
+                    [c1, c4, c3]])
+
+    # set size of joints
+    joint_size = 5
+
+    # set line width
+    line_width = 7
+
+    # read image here
+    canvas = Image.open(img_path)
+    draw = ImageDraw.Draw(canvas)
+
+    drawLines(draw, joints, clr, line_width)
+    for i in range(18):
+        draw.ellipse((joints[i, 0]-joint_size, joints[i, 1]-joint_size,
+                      joints[i, 0]+joint_size, joints[i, 1]+joint_size),
+                     fill=(clr[i, 0], clr[i, 1], clr[i, 2]), outline=None)
+
+    del draw
+
+    # save the images
+    canvas.save(output_path)
+
+
 def get_keypoints_array(json_file_path):
     with open(json_file_path) as f:
         json_dic = json.load(f)
