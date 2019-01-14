@@ -2,7 +2,7 @@
 
 # ディレクトリ構成
 - image\_dir: OpenPoseの入力画像
-  - rotated\_images: image\_dir直下の画像を回転させた画像
+  - rotated\_images: image\_dir直下の画像を回転させた画像。各フレームに対してサブディレクトリが存在しそのサブディレクトリ内に各回転角で回転させた画像が格納される
 - openpose\_output: OpenPoseの出力
   - for\_video: 最終的に動画にする画像と完成した動画
   - images: openposeの出力画像
@@ -52,6 +52,7 @@ openpose_output
 ```
 
 # 環境変数
+
 | 環境変数名 | 意味 |
 |:-:|:-:|:-:|
 | DIST\_THRESHOLD | フレーム間のジョイント距離の閾値 |
