@@ -1,6 +1,6 @@
 # rotated-pose
 
-# ディレクトリ構成
+## ディレクトリ構成(入出力データ)
 - image\_dir: OpenPoseの入力画像
   - rotated\_images: image\_dir直下の画像を回転させた画像。各フレームに対してサブディレクトリが存在しそのサブディレクトリ内に各回転角で回転させた画像が格納される
 - openpose\_output: OpenPoseの出力
@@ -51,7 +51,7 @@ openpose_output
    └── image000xxx
 ```
 
-# 環境変数
+## 環境変数
 
 | 環境変数名 | 意味 |
 |:-:|:-:|
