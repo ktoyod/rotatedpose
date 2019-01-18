@@ -1,4 +1,4 @@
-# rotated-pose
+# rotatedpose
 
 ## ディレクトリ構成(入出力データ)
 - image\_dir: OpenPoseの入力画像
