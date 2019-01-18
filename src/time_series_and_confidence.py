@@ -140,7 +140,7 @@ def main():
     BASE_PATH = args[1] if len(args) == 2 else './'
     JSON_PATH = os.path.join(BASE_PATH, 'json')
     IMGS_PATH = os.path.join(BASE_PATH, 'images')
-    MAX_DIST = 500
+    MAX_DIST = os.getenv('DIST_THRESHOLD')
     TIME_AND_CONFIDENCE_PATH = os.path.join(BASE_PATH,
                                             'for_time_and_confidence_video_{}'.format(MAX_DIST))
     if not os.path.isdir(TIME_AND_CONFIDENCE_PATH):

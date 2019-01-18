@@ -140,12 +140,12 @@ def get_rot_center(img_path):
 def main():
     args = sys.argv
 
-    W_CNT = 0.81
+    W_CNT = os.getenv('W_CNT')
 
     BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
     IMGS_PATH = os.path.join(BASE_PATH, 'images')
-    MAX_DIST = 500
+    MAX_DIST = os.getenv('DIST_THRESHOLD')
     TIME_AND_CONFIDENCE_DRAW_PATH = os.path.join(
                                         BASE_PATH,
                                         'for_confidence_with_dist_draw_smoothing_{}_video_{}'

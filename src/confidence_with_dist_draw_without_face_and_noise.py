@@ -142,7 +142,7 @@ def main():
     BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
     IMGS_PATH = os.path.join(BASE_PATH, 'images')
-    MAX_DIST = 500
+    MAX_DIST = os.getenv('DIST_THRESHOLD')
     TIME_AND_CONFIDENCE_DRAW_PATH = \
         os.path.join(BASE_PATH,
                      'for_confidence_with_dist_draw_without_face_and_noise_video_{}'
