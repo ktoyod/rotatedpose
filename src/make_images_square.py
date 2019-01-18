@@ -5,9 +5,6 @@ import sys
 import numpy as np
 from PIL import Image
 
-args = sys.argv
-IMAGE_DIR = args[1] if len(args) == 2 else './'
-
 
 def make_image_square(img, width, height):
     '''
@@ -33,19 +30,26 @@ def get_image_size(img):
     Returns: (width, height)
     '''
     return img.size
-    
 
-def main():
-    img_list = os.listdir(IMAGE_DIR)
+
+def make_images_in_directory_square(image_path):
+    img_list = os.listdir(image_path)
 
     for img_name in img_list:
-        img_path = os.path.join(IMAGE_DIR, img_name)
+        img_path = os.path.join(image_path, img_name)
         img = Image.open(img_path)
 
         width, height = get_image_size(img)
         square_img = make_image_square(img, width, height)
 
         square_img.save(img_path)
+
+
+def main():
+    args = sys.argv
+    IMAGE_DIR = args[1] if len(args) == 2 else './'
+
+    make_images_in_directory_square(IMAGE_DIR)
 
 
 if __name__ == '__main__':

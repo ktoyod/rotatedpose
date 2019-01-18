@@ -188,7 +188,7 @@ def main():
 
         image_list = make_list_in_dir(image_dir_path)
 
-        deg_split = 10
+        deg_split = os.getenv('DEG_SPLIT')
         rotate_deg = -1 * max_confidence_idx * deg_split
         max_confidence_image_path = os.path.join(image_dir_path, image_list[max_confidence_idx])
         save_path = os.path.join(FOR_VIDEO_DIR, '{}.png'.format(image_dir_name))

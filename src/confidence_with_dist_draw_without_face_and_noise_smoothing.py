@@ -8,7 +8,7 @@ from select_high_confidence_images import (get_max_confidence_and_idx_without_fa
                                            save_rotate_image,
                                            create_confidence_array_without_untrusted_joints)
 from smoothing import smoothing
-from utils.file import extract_keypoints_from_json, make_list_in_dir
+from utils.file import get_keypoints_array_from_json, make_list_in_dir
 from utils.rotate import rotate_keypoints_array, get_rot_center
 from utils.distance import euclidean_distance
 
@@ -21,6 +21,7 @@ def main():
     BASE_PATH = args[1]
     JSON_PATH = os.path.join(BASE_PATH, 'json')
     IMGS_PATH = os.path.join(BASE_PATH, 'images')
+    DEG_SPLIT = os.getenv('DEG_SPLIT')
     MAX_DIST = os.getenv('DIST_THRESHOLD')
     TIME_AND_CONFIDENCE_DRAW_PATH = \
         os.path.join(BASE_PATH,
@@ -80,7 +81,7 @@ def main():
                 get_max_confidence_and_idx_without_face_joints(json_dir_path)
             max_confidence_json_path = os.path.join(json_dir_path,
                                                     json_name_list[max_confidence_idx])
-            max_confidence_keypoints = extract_keypoints_from_json(max_confidence_json_path)
+            max_confidence_keypoints = get_keypoints_array_from_json(max_confidence_json_path)
 
             max_image_name = imgs_name_list[max_confidence_idx]
             max_image_path = os.path.join(imgs_dir_path, max_image_name)
@@ -108,12 +109,12 @@ def main():
             euclidean_dist_list = np.array([])
 
             for i in range(len(json_name_list)):
-                deg = i * 10
+                deg = i * DEG_SPLIT
 
                 json_name = json_name_list[i]
                 json_name_path = os.path.join(json_dir_path, json_name)
 
-                keypoints_array = extract_keypoints_from_json(json_name_path)
+                keypoints_array = get_keypoints_array_from_json(json_name_path)
 
                 if keypoints_array.any():
                     rotated_keypoints_array = rotate_keypoints_array(keypoints_array,
@@ -144,7 +145,7 @@ def main():
                     get_max_confidence_and_idx_without_face_joints(json_dir_path)
                 max_confidence_json_path = os.path.join(json_dir_path,
                                                         json_name_list[max_confidence_idx])
-                max_confidence_keypoints = extract_keypoints_from_json(max_confidence_json_path)
+                max_confidence_keypoints = get_keypoints_array_from_json(max_confidence_json_path)
 
                 max_image_name = imgs_name_list[max_confidence_idx]
                 max_image_path = os.path.join(imgs_dir_path, max_image_name)
@@ -201,7 +202,7 @@ def main():
                 confidence_f.write(str(max_confidence) + '\n')
 
                 best_json_path = os.path.join(json_dir_path, json_name_list[best_idx])
-                best_keypoints_array = extract_keypoints_from_json(best_json_path)
+                best_keypoints_array = get_keypoints_array_from_json(best_json_path)
                 cnt_keypoints_array = rotate_keypoints_array(best_keypoints_array,
                                                              best_idx * 10,
                                                              rot_center_x=rot_center_x,

@@ -3,29 +3,36 @@ import sys
 
 from PIL import Image
 
-args = sys.argv
-IMAGE_DIR = args[1] if len(args) == 2 else './'
-OUTPUT_DIR = os.path.join(IMAGE_DIR, 'rotated_images')
-if not os.path.isdir(OUTPUT_DIR):
-    os.mkdir(OUTPUT_DIR)
+from utils.file import make_list_in_dir
 
 
-def create_rotate_images(img_name, deg_split=10):
-    img = Image.open(os.path.join(IMAGE_DIR, img_name))
-    img_dir_name = os.path.join(OUTPUT_DIR, img_name.rstrip(".jpg"))
+def create_rotate_images(image_path, deg_split=10):
+    img = Image.open(image_path)
+    img_dir_name = image_path.split('/').rstrip('.jpg')
     os.mkdir(img_dir_name)
 
     deg_num = 360 // deg_split
     for i in range(deg_num):
         img_rotate = img.rotate(deg_split * i)
-        jpg_path = os.path.join(img_dir_name, '{}_rotate{:03}.jpg'.format(img_name.rstrip(".jpg"), deg_split * i))
+        jpg_path = os.path.join(
+                       img_dir_name,
+                       '{}_rotate{:03}.jpg'.format(img_dir_name, deg_split * i)
+                       )
         img_rotate.save(jpg_path)
 
 
-img_list = os.listdir(IMAGE_DIR)
-img_list.sort()
-img_list = [img for img in img_list if '.jpg' in img]
+def main():
+    args = sys.argv
 
-for img_name in img_list:
-    print(img_name)
-    create_rotate_images(img_name)
+    IMAGE_PATH = args[1]
+    OUTPUT_PATH = os.path.join(IMAGE_PATH, 'rotated_images')
+    if not os.path.isdir(OUTPUT_PATH):
+        os.mkdir(OUTPUT_PATH)
+
+    DEG_SPLIT = os.getenv('DEG_SPLIT')
+
+    img_list = make_list_in_dir(IMAGE_PATH, expanded='jpg')
+
+    for img_name in img_list:
+        image_path = os.path.join(IMAGE_PATH, img_name)
+        create_rotate_images(image_path, deg_split=DEG_SPLIT)
