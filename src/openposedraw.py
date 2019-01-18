@@ -184,7 +184,7 @@ def main():
         json_file_path = os.path.join(INPUT_JSON_PATH, json_name)
 
         output_image_path = os.path.join(OUTPUT_IMAGES_PATH,
-                                         'image{:06d}.png'.format(i))
+                                         'image{:06d}.png'.format(i + 1))
 
         keypoints_array = get_keypoints_array(json_file_path)
         reshaped_keypoints_array = keypoints_array.reshape([18, 3])
