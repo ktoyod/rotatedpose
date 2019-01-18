@@ -155,6 +155,8 @@ def main():
     CONFIDENCE_AVE_TEXT_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH,
                                             'confidence_mean_without_face_and_noise_{}.txt'
                                             .format(MAX_DIST))
+    ANGLES_FILE_PATH = os.path.join(TIME_AND_CONFIDENCE_DRAW_PATH,
+                                    'angles.txt')
 
     INPUT_IMAGES_PATH = args[2]
     input_imgs_list = make_list_in_dir(INPUT_IMAGES_PATH)
@@ -164,6 +166,7 @@ def main():
                                  'log_confidence_with_dist_draw.txt')
     f = open(log_file_path, 'w')
     confidence_f = open(CONFIDENCE_AVE_TEXT_PATH, 'w')
+    angles_f = open(ANGLES_FILE_PATH, 'w')
 
     # OpenPoseの結果jsonと画像が入っているディレクトリの名前のリスト
     # image000001, image000002, ...
@@ -223,6 +226,7 @@ def main():
 
             print('    confidence score: {}'.format(max_confidence))
             f.write('    confidence score: {}\n'.format(max_confidence))
+            angles_f.write(str(max_confidence_idx * 10) + '\n')
         # 最初のキーポイントが定まっているときは時系列を考慮して
         else:
             euclidean_dist_list = np.array([])
@@ -295,6 +299,7 @@ def main():
 
                 print('    confidence score: {}'.format(max_confidence))
                 f.write('    confidence score: {}\n'.format(max_confidence))
+                angles_f.write(str(max_confidence_idx * 10) + '\n')
 
             else:
                 print('{} ===================================='.format(json_dir))
@@ -336,8 +341,11 @@ def main():
                                      reshaped_reconst_keypoints_array)
                 pre_keypoints_array = reconst_keypoints_array
 
+                angles_f.write(str(best_idx * 10) + '\n')
+
     f.close()
     confidence_f.close()
+    angles_f.close()
 
 
 if __name__ == '__main__':
