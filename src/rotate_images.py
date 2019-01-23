@@ -3,6 +3,7 @@ import sys
 
 from PIL import Image
 
+from settings import Settings
 from utils.file import make_list_in_dir
 
 
@@ -29,10 +30,14 @@ def main():
     if not os.path.isdir(OUTPUT_PATH):
         os.mkdir(OUTPUT_PATH)
 
-    DEG_SPLIT = os.getenv('DEG_SPLIT')
+    DEG_SPLIT = Settings.DEG_SPLIT
 
     img_list = make_list_in_dir(IMAGE_PATH, expanded='jpg')
 
     for img_name in img_list:
         image_path = os.path.join(IMAGE_PATH, img_name)
         create_rotate_images(image_path, deg_split=DEG_SPLIT)
+
+
+if __name__ == '__main__':
+    main()

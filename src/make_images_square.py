@@ -5,6 +5,8 @@ import sys
 import numpy as np
 from PIL import Image
 
+from utils.file import make_list_in_dir
+
 
 def make_image_square(img, width, height):
     '''
@@ -24,22 +26,25 @@ def make_image_square(img, width, height):
     return square_img
 
 
-def get_image_size(img):
+def make_images_in_directory_square(image_path, output_path=None):
     '''
-    Args: 画像
-    Returns: (width, height)
+    Args:
+        image_path:
+            回転させたい画像が入っているディレクトリのパス
+        output_path:
+            回転させた画像を保存するディレクトリ
+            Noneの場合元のファイルを上書きする
+    Returns:
+        指定ディレクトリ内の画像を回転して保存する
     '''
-    return img.size
-
-
-def make_images_in_directory_square(image_path):
-    img_list = os.listdir(image_path)
+    img_list = make_list_in_dir(image_path)
 
     for img_name in img_list:
+        image_path = output_path if output_path else image_path
         img_path = os.path.join(image_path, img_name)
         img = Image.open(img_path)
 
-        width, height = get_image_size(img)
+        width, height = img.size
         square_img = make_image_square(img, width, height)
 
         square_img.save(img_path)
@@ -47,9 +52,11 @@ def make_images_in_directory_square(image_path):
 
 def main():
     args = sys.argv
-    IMAGE_DIR = args[1] if len(args) == 2 else './'
 
-    make_images_in_directory_square(IMAGE_DIR)
+    IMAGE_DIR_PATH = args[1]
+    OUTPUT_PATH = args[2] if len(args) == 3 else None
+
+    make_images_in_directory_square(IMAGE_DIR_PATH, OUTPUT_PATH)
 
 
 if __name__ == '__main__':
