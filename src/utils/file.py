@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 
-def extract_keypoints_from_json(json_path):
+def get_keypoints_array_from_json(json_path):
     '''
     Args:
         json_path: str
@@ -24,7 +24,7 @@ def extract_keypoints_from_json(json_path):
     return keypoints_array
 
 
-def make_list_in_dir(dir_path):
+def make_list_in_dir(dir_path, expanded=None):
     '''
     Args:
         dir_path: str
@@ -35,5 +35,7 @@ def make_list_in_dir(dir_path):
     '''
     list_in_dir = os.listdir(dir_path)
     list_in_dir.sort()
+    if expanded:
+        list_in_dir = [val for val in list_in_dir if val.endswith('.' + expanded)]
 
     return list_in_dir

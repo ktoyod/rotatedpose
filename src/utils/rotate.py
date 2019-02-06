@@ -128,3 +128,12 @@ def get_rot_center(img_path):
     center_x, center_y = width / 2, height / 2
 
     return center_x, center_y
+
+
+def save_rotate_image(image_path, save_path, deg):
+    '''
+    画像の回転を戻して保存する
+    '''
+    img = Image.open(image_path)
+    img_rotate = img.rotate(deg)
+    img_rotate.save(save_path)

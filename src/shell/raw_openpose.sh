@@ -1,5 +1,6 @@
 # 動画の名前
 NAME=""
+
 # INPUT_PATH=openpose_input/hogehoge
 INPUT_PATH="./openpose_input/$NAME"
 # INPUT_VIDEO_PATH="${INPUT_PATH%/}/${NAME}.mp4"

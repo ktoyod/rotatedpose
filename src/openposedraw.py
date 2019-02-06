@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from select_high_confidence_images import make_list_in_dir
+from utils.file import get_keypoints_array_from_json
 
 
 # draw the lines
@@ -151,17 +152,6 @@ def draw_joints_on_image(img_path, output_path, joints):
     canvas.save(output_path)
 
 
-def get_keypoints_array(json_file_path):
-    with open(json_file_path) as f:
-        json_dic = json.load(f)
-    if json_dic['people']:
-        keypoints_list = json_dic['people'][0]['pose_keypoints_2d']
-    else:
-        keypoints_list = [0 for i in range(18 * 3)]
-
-    return np.array(keypoints_list)
-
-
 def main():
     args = sys.argv
 
@@ -170,26 +160,22 @@ def main():
 
     OUTPUT_IMAGES_PATH = args[3]
 
-    image_name_list = make_list_in_dir(INPUT_IMAGES_PATH)
-    image_name_list = [image_name for image_name in image_name_list if 'jpg' in image_name]
-    json_name_list = make_list_in_dir(INPUT_JSON_PATH)
+    image_name_list = make_list_in_dir(INPUT_IMAGES_PATH, expnaded='jpg')
+    json_name_list = make_list_in_dir(INPUT_JSON_PATH, expanded='json')
 
     list_len = len(image_name_list)
 
     for i in range(list_len):
-        image_name = image_name_list[i]
-        json_name = json_name_list[i]
-
-        image_file_path = os.path.join(INPUT_IMAGES_PATH, image_name)
-        json_file_path = os.path.join(INPUT_JSON_PATH, json_name)
+        image_path = os.path.join(INPUT_IMAGES_PATH, image_name_list[i])
+        json_path = os.path.join(INPUT_JSON_PATH, json_name_list[i])
 
         output_image_path = os.path.join(OUTPUT_IMAGES_PATH,
                                          'image{:06d}.png'.format(i + 1))
 
-        keypoints_array = get_keypoints_array(json_file_path)
+        keypoints_array = get_keypoints_array_from_json(json_path)
         reshaped_keypoints_array = keypoints_array.reshape([18, 3])
 
-        draw_joints(image_file_path, output_image_path, reshaped_keypoints_array)
+        draw_joints(image_path, output_image_path, reshaped_keypoints_array)
 
 
 if __name__ == '__main__':

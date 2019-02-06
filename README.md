@@ -25,6 +25,8 @@ image_dir
      └── image000xxx
 
 openpose_output
+|
+movie_name
 ├── for_video
 │   ├── image000001.png
 │   ├── image000002.png
@@ -57,3 +59,7 @@ openpose_output
 |:-:|:-:|
 | DIST\_THRESHOLD | フレーム間のジョイント距離の閾値 |
 | W\_CNT | 平滑化の際の現在のフレームに対する重み |
+| DEG\_SPLIT | 角度の刻み幅 |
+| MAX\_NUM\_IN\_THRESHOLD | 閾値内で考慮する個数 |
+| IS\_SMOOTHED | 平滑化するか |
+| IS\_SELF\_DRAWING | jsonを自分で画像に描画するか |
