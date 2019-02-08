@@ -7,7 +7,7 @@ from PIL import Image
 
 from openposedraw import draw_joints_on_image
 from settings import Settings
-from utils.confidence import create_confidence_array, get_confidence_and_idx
+from utils.confidence import create_confidence_array, get_max_confidence_and_idx
 from utils.distance import euclidean_distance
 from utils.file import get_keypoints_array_from_json, make_list_in_dir
 from utils.rotate import get_rot_center, rotate_keypoints_array, save_rotate_image
@@ -96,7 +96,7 @@ def main():
 
             # confidenceの最大とそのインデックスから
             # confidence最大の時のキーポイントのnp.arrayを得る
-            max_confidence, max_confidence_idx = get_confidence_and_idx(json_dir_path)
+            max_confidence, max_confidence_idx = get_max_confidence_and_idx(json_dir_path)
             max_confidence_json_path = join(json_dir_path, json_name_list[max_confidence_idx])
             max_confidence_keypoints = get_keypoints_array_from_json(max_confidence_json_path)
 
@@ -156,7 +156,7 @@ def main():
                     if valid_dist_len <= MAX_NUM_IN_THRESHOLD else MAX_NUM_IN_THRESHOLD
 
             if valid_dist_len == 0:
-                max_confidence, max_confidence_idx = get_confidence_and_idx(json_dir_path)
+                max_confidence, max_confidence_idx = get_max_confidence_and_idx(json_dir_path)
                 max_confidence_json_path = join(json_dir_path, json_name_list[max_confidence_idx])
                 max_confidence_keypoints = get_keypoints_array_from_json(max_confidence_json_path)
 

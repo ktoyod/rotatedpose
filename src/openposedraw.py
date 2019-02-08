@@ -1,12 +1,10 @@
-import json
 import os
 import sys
 
 import numpy as np
 from PIL import Image, ImageDraw
 
-from select_high_confidence_images import make_list_in_dir
-from utils.file import get_keypoints_array_from_json
+from utils.file import get_keypoints_array_from_json, make_list_in_dir
 
 
 # draw the lines
@@ -160,7 +158,7 @@ def main():
 
     OUTPUT_IMAGES_PATH = args[3]
 
-    image_name_list = make_list_in_dir(INPUT_IMAGES_PATH, expnaded='jpg')
+    image_name_list = make_list_in_dir(INPUT_IMAGES_PATH, expanded='jpg')
     json_name_list = make_list_in_dir(INPUT_JSON_PATH, expanded='json')
 
     list_len = len(image_name_list)
@@ -175,7 +173,7 @@ def main():
         keypoints_array = get_keypoints_array_from_json(json_path)
         reshaped_keypoints_array = keypoints_array.reshape([18, 3])
 
-        draw_joints(image_path, output_image_path, reshaped_keypoints_array)
+        draw_joints_on_image(image_path, output_image_path, reshaped_keypoints_array)
 
 
 if __name__ == '__main__':

@@ -14,10 +14,14 @@ OUTPUT_JSON_PATH="${OUTPUT_RAW_PATH%/}/json"
 if [ ! -e $OUTPUT_JSON_PATH ]; then mkdir $OUTPUT_JSON_PATH ; fi
 OUTPUT_IMAGES_PATH="${OUTPUT_RAW_PATH%/}/images"
 if [ ! -e $OUTPUT_IMAGES_PATH ]; then mkdir $OUTPUT_IMAGES_PATH ; fi
-OUTPUT_VIDEO_PATH="${OUTPUT_RAW_PATH%/}/${NAME}_raw_openpose.mp4"
+OUTPUT_FOR_VIDEO_PATH="${OUTPFOR_RAW_PATH%/}/for_video"
+if [ ! -e $OUTPUT_FOR_VIDEO_PATH ]; then mkdir $OUTPUT_FOR_VIDEO_PATH ; fi
+OUTPUT_VIDEO_PATH="${OUTPUT_FOR_VIDEO_PATH%/}/${NAME}_raw_openpose.mp4"
 
 FRAME_RATE=30
 
 ./build/examples/openpose/openpose.bin --image_dir $INPUT_IMAGES_DIR --write_json $OUTPUT_JSON_PATH --write_images $OUTPUT_IMAGES_PATH --model_pose COCO --num_gpu_start 1 --display 0
 
-ffmpeg -y -r $FRAME_RATE -i "${OUTPUT_IMAGES_PATH%/}/image%6d_rendered.png" -c:v libx264 -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "${OUTPUT_VIDEO_PATH}"
+python3 /path/to/openposedraw.py "$INPUT_IMAGES_DIR" "$OUTPUT_JSON_PATH" "$OUTPUT_FOR_VIDEO_PATH"
+
+ffmpeg -y -r $FRAME_RATE -i "${OUTPUT_FOR_VIDEO_PATH%/}/image%6d.png" -c:v libx264 -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "${OUTPUT_VIDEO_PATH}"

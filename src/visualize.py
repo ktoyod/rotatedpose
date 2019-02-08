@@ -4,7 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from select_high_confidence_images import create_confidence_array_without_face_joints
+from utils.confidence import create_confidence_array
 
 
 def get_angles_list(angles_file_path):
@@ -17,7 +17,7 @@ def get_angles_list(angles_file_path):
 
 
 def get_openpose_confidence_list(openpose_json_path):
-    openpose_confidence_array = create_confidence_array_without_face_joints(openpose_json_path)
+    openpose_confidence_array = create_confidence_array(openpose_json_path)
 
     return list(openpose_confidence_array)
 
