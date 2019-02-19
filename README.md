@@ -1,4 +1,5 @@
 # rotatedpose
+- paper -> [Post-Data Augmentation to Improve Deep Pose Estimation of Extreme and Wild Motions - arxiv](https://arxiv.org/abs/1902.04250)
 
 ## ディレクトリ構成(入出力データ)
 - image\_dir: OpenPoseの入力画像
