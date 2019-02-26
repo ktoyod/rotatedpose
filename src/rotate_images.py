@@ -7,18 +7,19 @@ from settings import Settings
 from utils.file import make_list_in_dir
 
 
-def create_rotate_images(image_path, output_path, deg_split=10):
+def create_rotate_images(image_path, output_path, deg_split=10, ext='jpg'):
     img = Image.open(image_path)
-    img_dir_name = os.path.basename(image_path).rstrip('.jpg')
+    img_dir_name = os.path.basename(image_path).rstrip('.{}'.format(ext))
     img_dir_path = os.path.join(output_path, img_dir_name)
-    os.mkdir(img_dir_path)
+    if not os.path.isdir(img_dir_path):
+        os.mkdir(img_dir_path)
 
     deg_num = 360 // deg_split
     for i in range(deg_num):
         img_rotate = img.rotate(deg_split * i)
         jpg_path = os.path.join(
                        img_dir_path,
-                       '{}_rotate{:03}.jpg'.format(img_dir_name, deg_split * i)
+                       '{}_rotate{:03}.{}'.format(img_dir_name, deg_split * i, ext)
                        )
         img_rotate.save(jpg_path)
 
