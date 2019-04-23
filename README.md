@@ -28,7 +28,7 @@ $ ./plot_confidence.sh  # confidenceのグラフを作成
   - json: openposeの出力json
     - 上記２つは各フレームごとのサブディレクトリが存在しそのサブディレクトリ内に各回転角に対する結果ファイルが格納される
 ```
-openpose_output
+openpose_input
  |
 movie_name
  ├── movie_name.mp4
